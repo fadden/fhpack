@@ -2,7 +2,8 @@ fhpack - compression for Apple II hi-res images
 ===============================================
 
 fhpack is a compression tool with a singular purpose: to compress
-Apple II hi-res graphics images.
+Apple II hi-res graphics images.  It uses a modified version of
+the LZ4 compression format, called LZ4FH ("fadden's hi-res").
 
 
 ## Origins ##
