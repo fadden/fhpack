@@ -76,7 +76,8 @@ yielded the smallest output.
 
 The 6502/65816 versions of the uncompressor (source and binaries), as
 well as two slideshow applications written in Applesoft and a number
-of sample files, are provided on the attached disk images.
+of sample files, are provided on the [attached disk images](fhpack_disks.zip)
+(click "view raw" to download them from github).
 
 There are six disk images.  The first three hold the slide show demo:
 
