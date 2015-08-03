@@ -82,12 +82,12 @@ of sample files, are provided on the [attached disk images](fhpack_disks.zip)
 
 There are six disk images.  The first three hold the slide show demo:
 
- * LZ4FHDemo.do (/LZ4FH, 140KB) - Source and object code for the
+ * `LZ4FHDemo.do` (/LZ4FH, 140KB) - Source and object code for the
    uncompression routines, plus a few test images and the Applesoft
    "SLIDESHOW" program.
- * UncompressedSlides.do (/SLIDESHOW, 140KB) - A set of 16 uncompressed
+ * `UncompressedSlides.do` (/SLIDESHOW, 140KB) - A set of 16 uncompressed
    hi-res images.
- * CompressedSlides.do (/SLIDESHOW, 140KB) - A set of 42 compressed
+ * `CompressedSlides.do` (/SLIDESHOW, 140KB) - A set of 42 compressed
    hi-res images.
 
 To [view the demo](https://www.youtube.com/watch?v=sNBSd1oGGaU),
@@ -106,10 +106,11 @@ uncompress it than it is to load an uncompressed image.)
 
 There is a second demo, called "HYPERSLIDE", which shows off the raw
 performance by eliminating the disk accesses.  A set of 15 images is loaded
-into memory -- overwriting BASIC.System -- and presented as a slide show
-as quickly as possible.  The demo and selected images are on this disk:
+into just 24KB of memory -- overwriting BASIC.System -- and presented as a
+slide show as quickly as possible.  The demo and selected images are on
+this disk:
 
- * HyperSlide.po (/HYPERSLIDE, 140KB)
+ * `HyperSlide.po` (/HYPERSLIDE, 140KB)
 
 To [run the demo](https://www.youtube.com/watch?v=Wwg84nIkRZU), put
 the disk image in slot 6 drive 1, boot the disk,
@@ -121,10 +122,10 @@ and the slide show will beep at the start and end.
 A larger set of images is available on a pair of 800KB disks.  One disk
 has the compressed form, the other the uncompressed form:
 
- * UncompressedImages.po (/IMAGES, 800KB)
- * CompressedImages.po (/IMAGES.LZ4H, 800KB)
+ * `UncompressedImages.po` (/IMAGES, 800KB)
+ * `CompressedImages.po` (/IMAGES.LZ4H, 800KB)
 
-It's worth noting that the images on CompressedSlides.do take up about
+It's worth noting that the images on `CompressedSlides.do` take up about
 135KB of disk space, but are about 104KB combined.  The rest of the space
 is used up by filesystem overhead.  Storing them in a ShrinkIt archive
 would be more efficient, but would also make them far more difficult
@@ -144,8 +145,8 @@ about 3.7 fps, with very little variation between files.  The decode
 time is dominated by byte copies, and we're always copying 8KB, so the
 consistency is expected.
 
-HyperSlide still has some overhead from Applesoft BASIC.  The "blitz
-test", included on the LZ4FH demo disk, generates machine language
+HyperSlide incurs a fair bit of overhead from Applesoft BASIC.  The
+"blitz test", included on the LZ4FH demo disk, generates machine language
 calls that uncompress the same image 100x, eliminating all overhead
 (and simulating what HyperSlide could do if it weren't written in
 BASIC).  The speed improves to 5.6 fps.
@@ -163,7 +164,8 @@ $02FC and $02FE.  In the current implementation, the output buffer must
 be $2000 or $4000 (the two hi-res pages).
 
 Packed images use the FOT ($08) file type, with an auxtype of $8066
-(0x66 is ASCII 'f').
+(0x66 is ASCII 'f').  These files can be viewed with
+[CiderPress](http://a2ciderpress.com) v4.0.1 and later.
 
 
 ## Experimental Results ##
