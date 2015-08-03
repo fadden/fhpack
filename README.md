@@ -90,8 +90,9 @@ There are six disk images.  The first three hold the slide show demo:
  * CompressedSlides.do (/SLIDESHOW, 140KB) - A set of 42 compressed
    hi-res images.
 
-To view the demo, put the LZ4FHDemo image in slot 6 drive 1, and one
-of the slide disks in slot 6 drive 2.  Boot the disk and "-SLIDESHOW".
+To [view the demo](https://www.youtube.com/watch?v=sNBSd1oGGaU),
+put the LZ4FHDemo image in slot 6 drive 1, and one
+of the "slide" disks in slot 6 drive 2.  Boot the disk and "-SLIDESHOW".
 Just hit return at the prompt to accept the default prefix.
 
 The slideshow program will scan the specified directory and identify files
@@ -110,7 +111,8 @@ as quickly as possible.  The demo and selected images are on this disk:
 
  * HyperSlide.po (/HYPERSLIDE, 140KB)
 
-To run the demo, put the disk image in slot 6 drive 1, boot the disk,
+To [run the demo](https://www.youtube.com/watch?v=Wwg84nIkRZU), put
+the disk image in slot 6 drive 1, boot the disk,
 and "-HYPERSLIDE".  If you are running on a IIgs, you may want to try it
 with the 65816 uncompressor, which is much faster than the 6502 version.
 If you want to compute frame timings, you can set an iteration count,
