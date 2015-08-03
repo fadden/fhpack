@@ -268,3 +268,10 @@ Note: test/nomatch is not compressible by LZ4 encoding.  fhpack was able
 to compress it because it zeroed out the "screen holes".  When processed
 in hole-preservation mode, test/nomatch expands to 8292 bytes.
 
+LZSS, which was used by HardPressed to get reasonable compression with
+fast decode speeds, reduces the corpus to 243991 bytes (36.7%), making it
+a viable alternative.  It's generally inferior to LZ4 as the maximum
+match length and offset are much shorter, but that's not too significant
+for hi-res images.  Literals are identified with individual flag bits,
+rather than as runs of bytes, which reduces performance for long strings
+of literals.
