@@ -141,7 +141,7 @@ the size of the compressed image affects the amount of disk activity,
 but it averages about 1.4 seconds per image (about 0.7 fps).
 
 Removing disk activity from the equation, HyperSlide improves that to
-about 3.7 fps, with very little variation between files.  The decode
+about 4.3 fps, with very little variation between files.  The decode
 time is dominated by byte copies, and we're always copying 8KB, so the
 consistency is expected.
 
@@ -149,11 +149,13 @@ HyperSlide incurs a fair bit of overhead from Applesoft BASIC.  The
 "blitz test", included on the LZ4FH demo disk, generates machine language
 calls that uncompress the same image 100x, eliminating all overhead
 (and simulating what HyperSlide could do if it weren't written in
-BASIC).  The speed improves to 5.6 fps.
+BASIC).  The speed improves to 5.6 fps.  To put that into perspective,
+you could unpack an image twice in the time it takes the HGR command
+to clear the screen.
 
 The most significant boost in speed comes from using the 65816 data
 move instructions.  With a 65816 implementation, still running at 1MHz,
-HyperSlide hits 6 fps, and BLITZTEST tops 12 fps.
+HyperSlide hits 7.7 fps, and BLITZTEST tops 12 fps.
 
 
 #### Code Notes ####
