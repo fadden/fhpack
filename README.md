@@ -150,8 +150,8 @@ HyperSlide incurs a fair bit of overhead from Applesoft BASIC.  The
 calls that uncompress the same image 100x, eliminating all overhead
 (and simulating what HyperSlide could do if it weren't written in
 BASIC).  The speed improves to 5.6 fps.  To put that into perspective,
-you could unpack an image twice in the time it takes the HGR command
-to clear the screen.
+you could unpack a green image twice in the time it takes "CALL 62454"
+to clear the screen to green.
 
 The most significant boost in speed comes from using the 65816 data
 move instructions.  With a 65816 implementation, still running at 1MHz,
