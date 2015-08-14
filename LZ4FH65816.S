@@ -55,7 +55,25 @@ entry
          inx
          and   #$00ff
          cmp   #lz4fh_magic
+         beq   mainloop
+
+fail
+         jsr   bell
+         jmp   monitor
+
+notempty
+         cmp   #tok_eod
+
+* exit
+         sec              ;return to emulation mode
+         xce
          bne   fail
+         rts
+
+* handle "special" match length values (in A)
+specialmatch
+         cmp   #tok_empty
+         bne   notempty
 
 mainloop
          lda   $0000,x
@@ -73,8 +91,7 @@ mainloop
          lda   $0000,x    ;length >= 15, get next
          inx
          and   #$00ff
-         clc
-         adc   #15
+         adc   #14        ;(carry set) add 15 - will not exceed 255
 
 * At this point, Y holds the address of the next
 * compressed data byte, X has the address of the
@@ -114,23 +131,3 @@ _dstmod  ora   #$ff00     ;OR in hi-res page
          mvn   $00,$00
          plx              ;restore srcptr
          bra   mainloop
-
-* handle "special" match length values (in A)
-specialmatch
-         cmp   #tok_empty
-         beq   mainloop   ;empty match, just loop
-
-         cmp   #tok_eod
-         bne   fail
-
-* exit
-         sec              ;return to emulation mode
-         xce
-         rts
-
-fail
-         sec
-         xce
-         jsr   bell
-         jmp   monitor
-
