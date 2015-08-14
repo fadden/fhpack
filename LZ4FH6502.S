@@ -18,6 +18,7 @@ tok_empty equ  253
 tok_eod  equ   254
 
 overrun_check equ 0
+smaller equ 0
 
 *
 * Variable storage
@@ -59,13 +60,60 @@ entry
          lda   (srcptr),y
          cmp   #lz4fh_magic ;does magic match?
          beq   goodmagic
-         jmp   fail
+
+fail
+         jsr   bell
+         jmp   monitor
+
+hi2
+         inc   srcptr+1
+         bne   nohi2
+
+hi3
+         inc   srcptr+1
+         clc
+         bcc   nohi3
+
+hi4
+         inc   dstptr+1
+         bne   nohi4
+
+notempty
+         cmp   #tok_eod
+         bne   fail
+         rts              ;success!
+
+;* handle "special" match values (value in A)
+specialmatch
+         cmp   #tok_empty
+         bne   notempty
+         DO smaller
+advsrc1
+         sec
+advsrc2
+         FIN
+
+         tya              ;empty match, advance srcptr
+         adc   srcptr     ; past and jump to main loop
+         sta   srcptr
+         bcc   mainloop
+         inc   srcptr+1
+         bne   mainloop
+
+         DO   smaller
+         ELSE
+
+hi5
+         inc   srcptr+1
+         clc
+         bcc   nohi5
+
+         FIN
 
 goodmagic
          inc   srcptr
-         bne   :nohi
+         bne   mainloop
          inc   srcptr+1
-:nohi
 
 mainloop
 * Get the mixed-length byte and handle the literal.
@@ -81,12 +129,10 @@ mainloop
          bne   shortlit
 
          inc   srcptr
-         bne   :nohi
-         inc   srcptr+1
-:nohi
+         beq   hi2
+nohi2
          lda   (srcptr),y ;get length extension
-         clc
-         adc   #15        ;add 15 - will not exceed 255
+         adc   #14        ;(carry set) add 15 - will not exceed 255
 
 * At this point, srcptr holds the address of the "mix"
 * word or the length extension, and dstptr holds the
@@ -107,21 +153,18 @@ shortlit sta   savlen
          bne   :litloop   ;3 -> 16 cycles/byte
 
 * Advance srcptr by savlen+1, and dstptr by savlen
-         lda   srcptr
+         txa
          sec              ;this gets us the +1
-         adc   savlen
+         adc   srcptr
          sta   srcptr
-         bcc   :nohi
-         inc   srcptr+1
-         clc
-:nohi
-         lda   dstptr
-         adc   savlen
+         bcs   hi3
+nohi3
+         txa
+         adc   dstptr
          sta   dstptr
-         bcc   :nohi1
-         inc   dstptr+1
-:nohi1
-         ldy   #$ff       ;next INY rolls back to zero
+         bcs   hi4
+nohi4
+         dey              ;next INY rolls back to zero
 
 * Handle match.  Y holds an offset into srcptr such
 * that we need to increment it once to get the next
@@ -155,13 +198,19 @@ _desthi  ora   #$00       ;OR in hi-res page
 * remember how many bytes it took to encode.  Y is
 * indexing the last value used, so we want to go
 * advance srcptr by Y+1.
+
+         DO    smaller
+         sty   savsrc
+
+         ELSE
+
          tya
          sec
          adc   srcptr
          sta   srcptr
-         bcc   :nohi
-         inc   srcptr+1
-:nohi
+         bcs   hi5
+nohi5
+         FIN
 
 * Copy the match.  The length is in X.  Note this
 * must be a forward copy so overlapped data works.
@@ -180,21 +229,41 @@ _desthi  ora   #$00       ;OR in hi-res page
 
 * advance dstptr past copied data
          lda   dstptr
-         clc
          adc   savlen
          sta   dstptr
-         bcc   :nohi1
-         inc   dstptr+1
-:nohi1
 
+         DO    smaller
+         ldy   savsrc
+linkadv
+         bcc   advsrc
+
+         ELSE
+
+         bcc   mainloop
+
+         FIN
+
+         inc   dstptr+1
          DO    overrun_check
          LDA   dstptr+1
          CMP   #$60
-         BLT   :OKAY
+
+         DO   smaller
+         bcc   linkadv
+
+         ELSE
+
+         bcc   mainloop
+
+         FIN
+
          BRK
          BRK
-:OKAY
-         jmp   mainloop
+
+         ELSE
+
+         DO    smaller
+         bne   advsrc2
 
          ELSE
 
@@ -202,24 +271,4 @@ _desthi  ora   #$00       ;OR in hi-res page
 
          FIN
 
-* handle "special" match values (value in A)
-specialmatch
-         cmp   #tok_empty
-         bne   :notempty
-         tya              ;empty match, advance srcptr
-         adc   srcptr     ; past and jump to main loop
-         sta   srcptr
-         bcc   :nohi
-         inc   srcptr+1
-         clc
-:nohi
-         jmp   mainloop
-
-:notempty
-         cmp   #tok_eod
-         bne   fail
-         rts              ;success!
-fail
-         jsr   bell
-         jmp   monitor
-
+         FIN
