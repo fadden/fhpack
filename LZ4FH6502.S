@@ -144,7 +144,7 @@ nohi2
 * We could save a couple of cycles by substituting
 * addr,y in place of (dp),y, but the added setup cost
 * would only benefit longer literal strings.
-shortlit sta   savlen
+shortlit tax
          tay
 :litloop
          lda   (srcptr),y ;5
