@@ -5,7 +5,8 @@
 * Version 1.0.1, August 2015   *
 *                              *
 * Refactored for size & speed  *
-* by Peter Ferrie.             *
+* by Peter Ferrie.  (This      *
+* version favors code size.)   *
 *                              *
 * Developed with Merlin-16     *
 *                              *
@@ -30,6 +31,7 @@ dstptr   equ   $3e        ;2b a1h
 copyptr  equ   $00        ;2b
 savmix   equ   $02        ;1b
 savlen   equ   $03        ;1b
+savsrc   equ   $04        ;1b
 
 *
 * ROM routines
@@ -70,7 +72,7 @@ fail
 * These stubs increment the high byte and then jump
 * back.  This saves a cycle because branch-not-taken
 * becomes the common case.  We assume that we're not
-* unpacking data at $FFxx, so BNE is branch-always.
+* unpacking data at $ffxx, so BNE is branch-always.
 hi2
          inc   srcptr+1
          bne   nohi2
@@ -93,6 +95,9 @@ notempty
 specialmatch
          cmp   #tok_empty
          bne   notempty
+advsrc1
+         sec
+advsrc2
 
          tya              ;empty match, advance srcptr
          adc   srcptr     ; past and jump to main loop
@@ -100,11 +105,6 @@ specialmatch
          bcc   mainloop
          inc   srcptr+1
          bne   mainloop
-
-hi5
-         inc   srcptr+1
-         clc
-         bcc   nohi5
 
 goodmagic
          inc   srcptr
@@ -154,7 +154,7 @@ shortlit tax
          adc   srcptr
          sta   srcptr
          bcs   hi3
-nohi3                     ;carry cleared by hi3
+nohi3
          txa
          adc   dstptr
          sta   dstptr
@@ -195,12 +195,7 @@ _desthi  ora   #$00       ;OR in hi-res page
 * indexing the last value used, so we want to go
 * advance srcptr by Y+1.
 
-         tya
-         sec
-         adc   srcptr
-         sta   srcptr
-         bcs   hi5
-nohi5                     ;hi5 clears carry
+         sty   savsrc
 
 * Copy the match.  The length is in X.  Note this
 * must be a forward copy so overlapped data works.
@@ -219,23 +214,26 @@ nohi5                     ;hi5 clears carry
 
 * advance dstptr past copied data
          lda   dstptr
-         adc   savlen     ;carry is clear
+         adc   savlen     ;carry should still be clear
          sta   dstptr
-         bcc   mainloop
-         inc   dstptr+1
 
+         ldy   savsrc
+linkadv
+         bcc   advsrc1
+
+         inc   dstptr+1
          DO    overrun_check
          LDA   dstptr+1
          CMP   #$60
-         bcc   mainloop
+         bcc   linkadv
          BRK
          BRK
 
          ELSE
-
-         bne   mainloop   ;always (not unpacking at $FFxx)
+         bne   advsrc2
 
          FIN
+
 
          lst   on
          sav   LZ4FH6502

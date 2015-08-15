@@ -2,7 +2,10 @@
 *                               *
 * LZ4FH uncompression for 65816 *
 * By Andy McFadden              *
-* Version 1.0, August 2015      *
+* Version 1.0.1, August 2015    *
+*                               *
+* Refactored for size & speed   *
+* by Peter Ferrie.              *
 *                               *
 * Developed with Merlin-16      *
 *                               *
@@ -62,13 +65,15 @@ fail
          jmp   monitor
 
 notempty
-         cmp   #tok_eod
+         cmp   #tok_eod   ;end-of-data or error
 
 * exit
          sec              ;return to emulation mode
          xce
          bne   fail
          rts
+
+         mx    %00        ;undo the sec/xce
 
 * handle "special" match length values (in A)
 specialmatch
@@ -91,7 +96,7 @@ mainloop
          lda   $0000,x    ;length >= 15, get next
          inx
          and   #$00ff
-         adc   #14        ;(carry set) add 15 - will not exceed 255
+         adc   #14        ;(carry set) +15 - won't exceed 255
 
 * At this point, Y holds the address of the next
 * compressed data byte, X has the address of the
@@ -131,3 +136,7 @@ _dstmod  ora   #$ff00     ;OR in hi-res page
          mvn   $00,$00
          plx              ;restore srcptr
          bra   mainloop
+
+         lst   on
+         sav   LZ4FH65816
+         lst   off
