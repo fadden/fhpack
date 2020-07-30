@@ -38,7 +38,8 @@ does about 4% better on average -- not huge, but not negligible.
 Other compression programs, such as gzip, produce significantly smaller
 output, but uncompression is much slower and requires more memory.
 
-The comments in [fhpack.cpp](fhpack.cpp) describe the data format.
+The comments in [fhpack.cpp](fhpack.cpp) describe the data format.  It's
+essentially LZ4 modified to work better on a system with 8-bit registers.
 
 There is no implementation of the compression side for the 6502.
 An implementation that uses greedy parsing is feasible, as the bulk of the
