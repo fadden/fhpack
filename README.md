@@ -269,7 +269,7 @@ test/allgreen           |    63  |   137  |   215  |
 test/allzero            |    62  |   136  |    38  |
 test/nomatch            |  8211  |  7928  |  7414  |
 TOTAL                   | 248473 | 242771 | 232201 |
-                        |  37.4% |  36.5% |  34.9% |
+%                       |  37.4% |  36.5% |  34.9% |
 
 Note: test/nomatch is not compressible by LZ4 encoding.  fhpack was able
 to compress it because it zeroed out the "screen holes".  When processed
