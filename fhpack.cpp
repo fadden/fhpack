@@ -1,7 +1,7 @@
 /*
  * fhpack, an Apple II hi-res picture compressor.
  * By Andy McFadden
- * Version 1.0, August 2015
+ * Version 1.0.1, August 2023
  *
  * Copyright 2015 by faddenSoft.  All Rights Reserved.
  * See the LICENSE.txt file for distribution terms (Apache 2.0).
@@ -88,7 +88,6 @@ every 255 literals (4/4 byte, 1 for literal len extension, 1 for match
 len extension that holds the "no match" symbol).  Globally we add +1 for
 the magic number.  The "end-of-data" symbol replaces the "no match"
 symbol, so overall it's int(ceil(8192/255)) * 33 + 1 = 100 bytes.
-
 */
 /*
 Implementation notes:
@@ -158,7 +157,7 @@ enum ProgramMode {
  */
 static void usage(const char* argv0)
 {
-    fprintf(stderr, "fhpack v1.0 by Andy McFadden -*- ");
+    fprintf(stderr, "fhpack v1.0.1 by Andy McFadden -*- ");
     fprintf(stderr, "Copyright 2015 by faddenSoft\n");
     fprintf(stderr,
         "Source code available from https://github.com/fadden/fhpack\n\n");
@@ -447,9 +446,11 @@ size_t compressBufferOptimally(uint8_t* outBuf, const uint8_t* inBuf,
                 // backwards, we can end up with 32 literals followed
                 // by 255 literals, rather than the other way around.
                 DBUG(("  output literal-literal (%zd)\n", numLiterals));
-                if (numLiterals <= INITIAL_LEN) {
+                if (numLiterals < INITIAL_LEN) {
+                    // output 0-14 literals
                     *outPtr++ = (numLiterals << 4) | 0x0f;
                 } else {
+                    // output 15+(0-240) literals
                     *outPtr++ = 0xff;
                     *outPtr++ = numLiterals - INITIAL_LEN;
                 }
@@ -513,9 +514,12 @@ size_t compressBufferOptimally(uint8_t* outBuf, const uint8_t* inBuf,
 
     // Dump any remaining literals, with the end-of-data indicator
     // in the match len.
-    if (numLiterals <= INITIAL_LEN) {
+    DBUG(("ending with numLiterals=%zd\n", numLiterals));
+    if (numLiterals < INITIAL_LEN) {
+        // 0-14 literals, only need the nibble
         *outPtr++ = (numLiterals << 4) | 0x0f;
     } else {
+        // 15-255 literals, need the extra byte
         *outPtr++ = 0xff;
         *outPtr++ = numLiterals - INITIAL_LEN;
     }
@@ -570,7 +574,7 @@ size_t compressBufferGreedily(uint8_t* outBuf, const uint8_t* inBuf,
             if (numLiterals == MAX_LITERAL_LEN) {
                 // We've maxed out the literal string length.  Emit
                 // the previously literals with an empty match indicator.
-                DBUG(("  max literals reached"));
+                DBUG(("  max literals reached\n"));
                 *outPtr++ = 0xff;       // literal-len=15, match-len=15
                 *outPtr++ = MAX_LITERAL_LEN - INITIAL_LEN;  // 240
                 memcpy(outPtr, literalSrcPtr, numLiterals);
@@ -630,9 +634,12 @@ size_t compressBufferGreedily(uint8_t* outBuf, const uint8_t* inBuf,
 
     // Dump any remaining literals, with the end-of-data indicator
     // in the match len.
-    if (numLiterals <= INITIAL_LEN) {
+    DBUG(("ending with numLiterals=%zd\n", numLiterals));
+    if (numLiterals < INITIAL_LEN) {
+        // 0-14 literals, only need the nibble
         *outPtr++ = (numLiterals << 4) | 0x0f;
     } else {
+        // 15-255 literals, need the extra byte
         *outPtr++ = 0xff;
         *outPtr++ = numLiterals - INITIAL_LEN;
     }
@@ -673,7 +680,9 @@ size_t uncompressBuffer(uint8_t* outBuf, const uint8_t* inBuf, size_t inLen)
             DBUG(("Literals: %d\n", literalLen));
             if ((outPtr - outBuf) + literalLen > (long) MAX_SIZE ||
                     (inPtr - inBuf) + literalLen > (long) inLen) {
-                fprintf(stderr, "Buffer overrun\n");
+                fprintf(stderr,
+                    "Buffer overrun L: outPosn=%zd inPosn=%zd len=%d inLen=%ld\n",
+                    outPtr - outBuf, inPtr - inBuf, literalLen, inLen);
                 return 0;
             }
             memcpy(outPtr, inPtr, literalLen);
@@ -707,7 +716,9 @@ size_t uncompressBuffer(uint8_t* outBuf, const uint8_t* inBuf, size_t inLen)
             uint8_t* srcPtr = outBuf + matchOffset;
             if ((outPtr - outBuf) + matchLen > MAX_SIZE ||
                     (srcPtr - outBuf) + matchLen > MAX_SIZE) {
-                fprintf(stderr, "Buffer overrun\n");
+                fprintf(stderr,
+                    "Buffer overrun M: outPosn=%zd srcPosn=%zd len=%d\n",
+                    outPtr - outBuf, srcPtr - outBuf, matchLen);
                 return 0;
             }
             while (matchLen-- != 0) {
